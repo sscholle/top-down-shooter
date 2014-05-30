@@ -2,12 +2,12 @@
 package com.badlogic.gradletest;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.Input.*;
-
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -34,6 +34,8 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
     Texture propellerTexture2;
     Sprite propeller;
     Integer propellerNumber;
+
+    float planeScale = 0.666f;
 
     // TODO: Game Model
     Integer appWidth;
@@ -62,6 +64,12 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
     ArrayList<Explosion> expCollection = new ArrayList<Explosion>();// = new Sprite();
     Integer expCollectionSize;
 
+    Ground ground;
+
+    // SOUNDS:
+    Sound pigeon;
+    Enemy tmp;
+
     @Override
 	public void create () {
         appWidth = Gdx.graphics.getWidth();
@@ -73,19 +81,21 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
         enemyCollectionSize = 0;
         expCollectionSize = 0;
 
-                batch = new SpriteBatch();
-        titleImg = new Texture("airplane/airPlanesBackground.png");
-        bgSprite = new Sprite(titleImg);
-        bgSprite.setSize(appWidth, appHeight);
+        batch = new SpriteBatch();
+
+        pigeon = Gdx.audio.newSound(Gdx.files.internal("pigeon.mp3"));
+
+        ground = new Ground("airplane/airPlanesBackground.png", appWidth, appHeight, 80.0f);
+
         font = new BitmapFont();
 
         font.setColor(Color.WHITE);
         playerState = PlayerState.NORMAL;
         directionKeyReleased = true;
 
-        baseAcell = 0.3f;
-        highestAccelX = 10.0f;
-        highestAccelY = 10.0f;
+        baseAcell = 0.333f;
+        highestAccelX = 6.66f;
+        highestAccelY = 6.66f;
 
         subjectTextureLeft = new Texture(Gdx.files.internal("airplane/PLANE_8_L.png"));
         planeLeft = new Sprite(subjectTextureLeft);
@@ -94,7 +104,9 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
         subjectTexture = new Texture(Gdx.files.internal("airplane/PLANE_8_N.png"));
         planeNormal = new Sprite(subjectTexture);
         subjectSprite = new Sprite(subjectTexture);
-        subjectSprite.setSize(planeNormal.getWidth(), planeNormal.getHeight());
+        subjectSprite.setSize(planeScale*subjectTexture.getWidth(), planeScale*subjectTexture.getHeight());
+
+        //subjectSprite.setSize(planeNormal.getWidth(), planeNormal.getHeight());
         subjectSprite.setOrigin(planeNormal.getWidth()/2, 0);
 
         planeShadowTexture = new Texture(Gdx.files.internal("airplane/PLANE_8_SHADOW.png"));
@@ -108,7 +120,7 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
         propTexArray.add(0, propellerTexture1);
         propTexArray.add(1, propellerTexture2);
         propeller = new Sprite(propellerTexture1);
-
+        propeller.setScale(planeScale);
 
         currentMaxAccelX = 0;
         currentMaxAccelY = 0;
@@ -125,6 +137,7 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
         Gdx.input.setInputProcessor(this);
         elapsedTime = 0;
         lastInputCheck = 0;
+
 	}
 
     private void initPlane(){
@@ -157,11 +170,12 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
         if(GoOrNot == 1){
             Enemy enemy;
 
-            int randomEnemy = Util.getRandomNumberBetween(0, 1);
-            if(randomEnemy == 0)
-                enemy = new Enemy("enemy1.png", (float)Math.random(), appWidth/2, appHeight/2);
+            //int randomEnemy = Util.getRandomNumberBetween(0, 1);
+            double rand = Math.random();
+            if(rand < 0.5f)
+                enemy = new Enemy("airplane/PLANE_1_N.png", 0.6f, appWidth/2, appHeight/2);
             else
-                enemy = new Enemy("enemy1.png", (float)Math.random(), appWidth/2, appHeight/2);
+                enemy = new Enemy("airplane/PLANE_2_N.png", 0.6f, appWidth/2, appHeight/2);
 
             enemy.initPath(appWidth, appHeight);
             enemyCollection.add(enemy);
@@ -179,6 +193,9 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
 
 	@Override
 	public void render () {
+
+        // ACELLEROMETER CONTROLS
+        // TODO: Controls System
         if(Gdx.app.getType() == Application.ApplicationType.iOS || Gdx.app.getType() == Application.ApplicationType.Android)
         {
             int deviceAngle = Gdx.input.getRotation();
@@ -196,13 +213,17 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
                 currentMaxAccelY = accelY;
         }
 
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(0.5f, 1, 0.5f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
 		batch.begin();
-        bgSprite.draw(batch);
+        ground.render(batch);
         timeScore();
         font.draw(batch, "Score: "+score, 20, appHeight - 20);
+
+        font.draw(batch, "Planes: "+enemyCollectionSize, 20, appHeight - 50);
+
+        font.draw(batch, "Explosions: "+expCollectionSize, 20, appHeight - 80);
         positionPlane();
         checkInput();
         planeShadow.draw(batch);
@@ -214,18 +235,13 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
             enemyCollection.get(x).render(batch);
             if(enemyCollection.get(x).checkOverlap(subjectSprite.getBoundingRectangle()))
             {
-                // do stuff
-                System.out.println("Boom!");
-                //enemy.explode();
-
-                Explosion exp = new Explosion(new Texture(Gdx.files.internal("explosion19.png")), enemyCollection.get(x)._x, enemyCollection.get(x)._y);
+                // sound
+                pigeon.play();
+                tmp = enemyCollection.get(x);
+                tmp.setDispose();
+                Explosion exp = new Explosion("explosion19.png", (tmp._x + tmp.sprite.getWidth()/2), tmp._y + tmp.sprite.getHeight()/2);
                 expCollection.add(exp);
                 expCollectionSize++;
-                enemyCollection.get(x).dispose();
-                // use explosion manager to spawn new explosion
-                enemyCollection.remove(x);
-
-                enemyCollectionSize--;
                 score += 250000;
             }
         }
@@ -235,13 +251,25 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
             expCollection.get(x).render(batch);
         }
 
-
         batch.end();
 
+        // GC after rendering
+
+
+        for (int x = 0; x<enemyCollectionSize; x++)
+        {
+            if(enemyCollection.get(x)._dispose)
+            {
+                enemyCollection.get(x).dispose();
+                // use explosion manager to spawn new explosion
+                enemyCollection.remove(x);
+                enemyCollectionSize--;
+            }
+        }
 
         for (int x = 0; x<expCollectionSize; x++)
         {
-            if (expCollection.get(x).elapsedTime > 1.3f){
+            if (expCollection.get(x).elapsedTime > 1.6f){
                 expCollection.get(x).dispose();
                 // use explosion manager to spawn new explosion
                 expCollection.remove(x);
@@ -345,9 +373,9 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
         newY = Math.min(Math.max(newY + subjectSprite.getY(), minX), maxX);
 
         newXpropeller = newX + (subjectSprite.getWidth()/2) - (propeller.getWidth()/2);
-        newYpropeller = newY + (subjectSprite.getHeight())-15;
+        newYpropeller = newY + (subjectSprite.getHeight())-(15*planeScale);
 
-        subjectSprite.setPosition(newX, newY);
+        subjectSprite.setPosition(Math.round(newX), Math.round(newY));
         planeShadow.setPosition(newXshadow, newYshadow);
         propeller.setPosition(newXpropeller, newYpropeller);
     }

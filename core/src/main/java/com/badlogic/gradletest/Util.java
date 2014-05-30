@@ -13,16 +13,11 @@ import java.util.Random;
 public class Util {
 
     public static Integer getRandomNumberBetween(int from, int to) {
-        int x = (int)Math.round(((to - from) / 2) * (Math.random())) + (int)Math.round(((to - from) / 2) * Math.random());
-//        System.out.println("from: "+from+" to: "+to);
-//        System.out.println("x: "+x);
-        return x;
+        return from + (int)(Math.random() * ((to - from) + 1));
     }
+
     public static Integer getRandomNumberBetween(float from, float to) {
-        int x = (int)Math.round(((to - from) / 2) * (Math.random())) + (int)Math.round(((to - from) / 2) * Math.random());
-//        System.out.println("from: "+from+" to: "+to);
-//        System.out.println("x: "+x);
-        return x;
+        return Math.round(from + (int)(Math.random() * ((to - from) + 1)));
     }
 
     public static <T> void cleanNulls( final ArrayList<T> lst )

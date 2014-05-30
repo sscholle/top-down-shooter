@@ -21,11 +21,12 @@ public class Explosion {
     float _y;
     float elapsedTime = 0.0f;
 
-    public Explosion(Texture explosion, float xPos, float yPos)
+    public Explosion(String expTexPath, float xPos, float yPos)
     {
-        exp = explosion;
+        exp = new Texture(Gdx.files.internal(expTexPath));
         _x = xPos;
         _y = yPos;
+        // TODO: process this once in the manager
         TextureRegion[][] tmp = TextureRegion.split(exp, exp.getWidth() / 5, exp.getHeight() / 5);
         TextureRegion[] walkFrames = new TextureRegion[5 * 5];
         int index = 0;

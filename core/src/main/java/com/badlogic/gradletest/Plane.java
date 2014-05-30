@@ -2,6 +2,7 @@ package com.badlogic.gradletest;
 
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,6 +23,16 @@ public class Plane {
     private Sound diveS;
 
     public void Plane(PlaneConfig planeConfig){
+
+    }
+
+    public void render(SpriteBatch batch)
+    {
+
+    }
+
+    private void positionPlane()
+    {
 
     }
 
