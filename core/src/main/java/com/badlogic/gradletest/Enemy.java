@@ -35,7 +35,9 @@ public class Enemy {
         sprite = new Sprite(texture);
 
         sprite.setSize(scale*texture.getWidth(), scale*texture.getHeight());
+
         sprite.setOrigin(sprite.getWidth()/2, sprite.getHeight()/2);
+
         sprite.setPosition(xPos, yPos);
         //System.out.println("scale: "+scale);
         //sprite.setScale(scale);
@@ -62,13 +64,13 @@ public class Enemy {
 
         //ControlPoint1
         float cp1X =  Util.getRandomNumberBetween(0 + sprite.getWidth(), appWidth - sprite.getWidth());
-        float cp1Y =  Util.getRandomNumberBetween(0+sprite.getWidth(), appWidth-sprite.getHeight());
+        float cp1Y =  Util.getRandomNumberBetween(0+sprite.getWidth(), appHeight-sprite.getHeight());
 
         //ControlPoint2
         float cp2X =  Util.getRandomNumberBetween(0+sprite.getWidth(), appWidth-sprite.getWidth());
         float cp2Y =  Util.getRandomNumberBetween(0, cp1Y);
 
-        Vector2 s = new Vector2(xStart, 1200);
+        Vector2 s = new Vector2(xStart, appHeight);
         Vector2 e = new Vector2(xEnd, -sprite.getHeight());
         Vector2 cp1 = new Vector2(cp1X, cp1Y);
         Vector2 cp2 = new Vector2(cp2X, cp2Y);

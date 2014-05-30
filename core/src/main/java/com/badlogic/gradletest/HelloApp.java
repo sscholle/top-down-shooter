@@ -35,7 +35,7 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
     Sprite propeller;
     Integer propellerNumber;
 
-    float planeScale = 0.666f;
+    float planeScale = 0.5f;
 
     // TODO: Game Model
     Integer appWidth;
@@ -69,11 +69,16 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
     // SOUNDS:
     Sound pigeon;
     Enemy tmp;
+    Camera camera;
 
     @Override
 	public void create () {
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
+
+        // viewport
+        camera = new OrthographicCamera(appWidth, appHeight);
+        camera.update();
 
         lastTimeScore = 0.0f;
         score = 0;
@@ -91,8 +96,11 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
 
         font.setColor(Color.WHITE);
         playerState = PlayerState.NORMAL;
+
+        // control management
         directionKeyReleased = true;
 
+        // player management
         baseAcell = 0.333f;
         highestAccelX = 6.66f;
         highestAccelY = 6.66f;
@@ -127,6 +135,7 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
 
         initPlane();
         scheduleEnemies();
+
 //		try {
 //			new FreeTypeFontGenerator(Gdx.files.internal("test.fnt"));
 //		} catch(Exception e) {
@@ -137,7 +146,6 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
         Gdx.input.setInputProcessor(this);
         elapsedTime = 0;
         lastInputCheck = 0;
-
 	}
 
     private void initPlane(){
@@ -173,9 +181,9 @@ public class HelloApp extends ApplicationAdapter implements ApplicationListener,
             //int randomEnemy = Util.getRandomNumberBetween(0, 1);
             double rand = Math.random();
             if(rand < 0.5f)
-                enemy = new Enemy("airplane/PLANE_1_N.png", 0.6f, appWidth/2, appHeight/2);
+                enemy = new Enemy("airplane/PLANE_1_N.png", planeScale, appWidth/2, appHeight/2);
             else
-                enemy = new Enemy("airplane/PLANE_2_N.png", 0.6f, appWidth/2, appHeight/2);
+                enemy = new Enemy("airplane/PLANE_2_N.png", planeScale, appWidth/2, appHeight/2);
 
             enemy.initPath(appWidth, appHeight);
             enemyCollection.add(enemy);
